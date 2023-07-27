@@ -51,7 +51,7 @@ func (*PicAction) Execute(a *ActionInfo) bool {
 	// 	return false
 	// }
 
-	logger.Warn("PicAction Execute")
+	logger.Warn("PicAction Execute!!!")
 
 	if a.info.msgType == "image" {
 		// read url

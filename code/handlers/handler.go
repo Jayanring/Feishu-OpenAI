@@ -17,6 +17,7 @@ import (
 
 // 责任链
 func chain(data *ActionInfo, actions ...Action) bool {
+	logger.Warn(fmt.Sprintf("get msg: %v", data.info))
 	for _, v := range actions {
 		if !v.Execute(data) {
 			return false
