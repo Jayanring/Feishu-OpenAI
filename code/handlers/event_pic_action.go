@@ -80,35 +80,21 @@ func (*PicAction) Execute(a *ActionInfo) bool {
 				a.info.msgId)
 			return false
 		}
-		// file := resp.File
-		// readall, err := io.ReadAll(file)
-		// if err != nil {
-		// 	logger.Warnf("readall failed")
-		// }
-		// logger.Warnf("readall len: %d", len(readall))
 
-		f := fmt.Sprintf("%s.png", imageKey)
-		logger.Warnf("filename: %s", f)
-		resp.WriteFile(f)
-		err = openai.VerifyPngs([]string{f})
-		if err != nil {
-			logger.Warnf("WriteFile verify failed: %s", err)
-		}
-		// defer os.Remove(f)
+		f_jpg := fmt.Sprintf("%s.jpg", imageKey)
+		f_png := fmt.Sprintf("%s.png", imageKey)
+		logger.Warnf("filename: %s", f_jpg)
+		resp.WriteFile(f_jpg)
 
-		openai.ConvertJpegToPNG(f)
-		err = openai.VerifyPngs([]string{f})
-		if err != nil {
-			logger.Warnf("ConvertJpegToPNG verify failed: %s", err)
-		}
-		openai.ConvertToRGBA(f, f)
-		err = openai.VerifyPngs([]string{f})
-		if err != nil {
-			logger.Warnf("ConvertToRGBA verify failed: %s", err)
-		}
+		// defer os.Remove(f_jpg)
+		// defer os.Remove(f_png)
 
+		openai.ConvertJpegToPNG(f_jpg)
+		
+		openai.ConvertToRGBA(f_png, f_png)
+		
 		//图片校验
-		err = openai.VerifyPngs([]string{f})
+		err = openai.VerifyPngs([]string{f_png})
 		if err != nil {
 			logger.Warnf("VerifyPngs error: %s", err)
 			replyMsg(*a.ctx, "🤖️：无法解析图片，请发送原图并尝试重新操作～",
@@ -123,7 +109,7 @@ func (*PicAction) Execute(a *ActionInfo) bool {
 		// }
 
 		// send task
-		taskId, err := sendTask(url, f)
+		taskId, err := sendTask(url, f_png)
 		if err != nil {
 			replyMsg(*a.ctx, fmt.Sprintf("任务ID: %s\n发送出错", taskId), a.info.msgId)
 			logger.Warn(fmt.Sprintf("任务ID: %s\n发送出错", taskId))

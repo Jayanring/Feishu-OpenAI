@@ -153,9 +153,6 @@ func pictureMultipartForm(request ImageVariantRequestBody,
 }
 
 func VerifyPngs(pngPaths []string) error {
-	foundPng := false
-	var expectedWidth, expectedHeight int
-
 	for _, pngPath := range pngPaths {
 		f, err := os.Open(pngPath)
 		if err != nil {
@@ -173,24 +170,9 @@ func VerifyPngs(pngPaths []string) error {
 				"must be under %d MB", 4)
 		}
 
-		image, err := png.Decode(f)
+		_, err = png.Decode(f)
 		if err != nil {
 			return fmt.Errorf("image must be valid png, got error: %v", err)
-		}
-		width := image.Bounds().Dx()
-		height := image.Bounds().Dy()
-		if width != height {
-			return fmt.Errorf("found non-square image with dimensions %dx%d", width, height)
-		}
-
-		if !foundPng {
-			foundPng = true
-			expectedWidth = width
-			expectedHeight = height
-		} else {
-			if width != expectedWidth || height != expectedHeight {
-				return fmt.Errorf("dimensions of all images must match, got both (%dx%d) and (%dx%d)", width, height, expectedWidth, expectedHeight)
-			}
 		}
 	}
 
