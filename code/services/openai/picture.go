@@ -9,6 +9,7 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
+	"start-feishubot/logger"
 )
 
 type ImageGenerationRequestBody struct {
@@ -165,7 +166,8 @@ func VerifyPngs(pngPaths []string) error {
 		if err != nil {
 			return fmt.Errorf("f.Stat: %v", err)
 		}
-
+		
+		logger.Warnf("verify size: %dB", fi.Size())
 		if fi.Size() > 4*1024*1024 {
 			return fmt.Errorf("image size too large, "+
 				"must be under %d MB", 4)
