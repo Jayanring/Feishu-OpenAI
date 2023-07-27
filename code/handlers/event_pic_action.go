@@ -64,6 +64,7 @@ func (*PicAction) Execute(a *ActionInfo) bool {
 			replyMsg(*a.ctx, "AI绘图任务功能关闭了，改天再来吧", a.info.msgId)
 			return false
 		}
+		logger.Info(fmt.Sprintf("sd_painter_url: %s", url))
 
 		//保存图片
 		imageKey := a.info.imageKey
@@ -258,7 +259,7 @@ func readUrl() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(data), nil
+	return strings.Replace(string(data), "\n", "", -1), nil
 }
 
 // func WriteFile(fileName string) error {
