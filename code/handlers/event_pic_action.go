@@ -82,8 +82,9 @@ func (*PicAction) Execute(a *ActionInfo) bool {
 		}
 
 		f := fmt.Sprintf("%s.png", imageKey)
+		logger.Warnf("filename: %s", f)
 		resp.WriteFile(f)
-		defer os.Remove(f)
+		// defer os.Remove(f)
 
 		openai.ConvertJpegToPNG(f)
 		openai.ConvertToRGBA(f, f)
@@ -91,6 +92,7 @@ func (*PicAction) Execute(a *ActionInfo) bool {
 		//图片校验
 		err = openai.VerifyPngs([]string{f})
 		if err != nil {
+			logger.Warnf("VerifyPngs error: %s", err)
 			replyMsg(*a.ctx, "🤖️：无法解析图片，请发送原图并尝试重新操作～",
 				a.info.msgId)
 			return false
