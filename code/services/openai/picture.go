@@ -228,9 +228,7 @@ func ConvertJpegToPNG(jpgPath string) error {
 	_, err = jpeg.Decode(f)
 	if err != nil {
 		// The file is not a JPEG image, no need to convert it
-		// return fmt.Errorf("file %s is not a JPEG image", jpgPath)
-		pngPath := jpgPath[:len(jpgPath)-4] + ".png"
-		os.Rename(jpgPath, pngPath)
+		return fmt.Errorf("file %s is not a JPEG image", jpgPath)
 	}
 
 	// Reset the file pointer to the beginning of the file

@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	larkim "github.com/larksuite/oapi-sdk-go/v3/service/im/v1"
 	"image"
 	"image/png"
 	"io/ioutil"
@@ -17,40 +18,12 @@ import (
 	"start-feishubot/services/openai"
 	"strings"
 	"time"
-
-	larkim "github.com/larksuite/oapi-sdk-go/v3/service/im/v1"
 )
 
 type PicAction struct { /*图片*/
 }
 
 func (*PicAction) Execute(a *ActionInfo) bool {
-	// check := AzureModeCheck(a)
-	// if !check {
-	// 	return true
-	// }
-	// // 开启图片创作模式
-	// if _, foundPic := utils.EitherTrimEqual(a.info.qParsed,
-	// 	"/picture", "图片创作"); foundPic {
-	// 	a.handler.sessionCache.Clear(*a.info.sessionId)
-	// 	a.handler.sessionCache.SetMode(*a.info.sessionId,
-	// 		services.ModePicCreate)
-	// 	a.handler.sessionCache.SetPicResolution(*a.info.sessionId,
-	// 		services.Resolution256)
-	// 	sendPicCreateInstructionCard(*a.ctx, a.info.sessionId,
-	// 		a.info.msgId)
-	// 	return false
-	// }
-
-	// mode := a.handler.sessionCache.GetMode(*a.info.sessionId)
-	// //fmt.Println("mode: ", mode)
-	// logger.Debug("MODE:", mode)
-	// // 收到一张图片,且不在图片创作模式下, 提醒是否切换到图片创作模式
-	// if a.info.msgType == "image" && mode != services.ModePicCreate {
-	// 	sendPicModeCheckCard(*a.ctx, a.info.sessionId, a.info.msgId)
-	// 	return false
-	// }
-
 	logger.Warn("PicAction Execute!!!")
 
 	if a.info.msgType == "image" {
@@ -82,32 +55,36 @@ func (*PicAction) Execute(a *ActionInfo) bool {
 			return false
 		}
 
+		logger.Warnf("filename: %s", imageKey)
 		f_jpg := fmt.Sprintf("%s.jpg", imageKey)
 		f_png := fmt.Sprintf("%s.png", imageKey)
-		logger.Warnf("filename: %s", f_jpg)
+		defer os.Remove(f_jpg)
+		defer os.Remove(f_png)
 		resp.WriteFile(f_jpg)
 
-		// defer os.Remove(f_jpg)
-		// defer os.Remove(f_png)
+		// 检查是否已经是png
+		err = openai.VerifyPngs([]string{f_jpg})
+		if err != nil {
+			if err == fmt.Errorf("image must be valid png, got error: %v", err) {
+				openai.ConvertJpegToPNG(f_jpg)
+			} else {
+				logger.Warnf("VerifyPngs error: %s", err)
+				replyMsg(*a.ctx, fmt.Sprintf("🤖️：无法解析图片: %s", err), a.info.msgId)
+				return false
+			}
+		} else {
+			os.Rename(f_jpg, f_png)
+		}
 
-		openai.ConvertJpegToPNG(f_jpg)
-		
 		openai.ConvertToRGBA(f_png, f_png)
-		
+
 		//图片校验
 		err = openai.VerifyPngs([]string{f_png})
 		if err != nil {
-			logger.Warnf("VerifyPngs error: %s", err)
-			replyMsg(*a.ctx, "🤖️：无法解析图片，请发送原图并尝试重新操作～",
-				a.info.msgId)
+			logger.Warnf("VerifyPngs again error: %s", err)
+			replyMsg(*a.ctx, fmt.Sprintf("🤖️：无法解析图片: %s", err), a.info.msgId)
 			return false
 		}
-		// bs64, err := a.handler.gpt.GenerateOneImageVariation(f, resolution)
-		// if err != nil {
-		// 	replyMsg(*a.ctx, fmt.Sprintf(
-		// 		"🤖️：图片生成失败，请稍后再试～\n错误信息: %v", err), a.info.msgId)
-		// 	return false
-		// }
 
 		// send task
 		taskId, err := sendTask(url, f_png)
@@ -165,22 +142,6 @@ func (*PicAction) Execute(a *ActionInfo) bool {
 		}
 
 	}
-
-	// 生成图片
-	// if mode == services.ModePicCreate {
-	// 	resolution := a.handler.sessionCache.GetPicResolution(*a.
-	// 		info.sessionId)
-	// 	bs64, err := a.handler.gpt.GenerateOneImage(a.info.qParsed,
-	// 		resolution)
-	// 	if err != nil {
-	// 		replyMsg(*a.ctx, fmt.Sprintf(
-	// 			"🤖️：图片生成失败，请稍后再试～\n错误信息: %v", err), a.info.msgId)
-	// 		return false
-	// 	}
-	// 	replayImageCardByBase64(*a.ctx, bs64, a.info.msgId, a.info.sessionId,
-	// 		a.info.qParsed)
-	// 	return false
-	// }
 
 	return true
 }
@@ -261,16 +222,3 @@ func readUrl() (string, error) {
 	}
 	return strings.Replace(string(data), "\n", "", -1), nil
 }
-
-// func WriteFile(fileName string) error {
-// 	bs, err := ioutil.ReadAll(resp.File)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	err = ioutil.WriteFile(fileName, bs, 0666)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
