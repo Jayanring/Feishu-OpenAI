@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"image"
 	"image/png"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -80,14 +81,32 @@ func (*PicAction) Execute(a *ActionInfo) bool {
 				a.info.msgId)
 			return false
 		}
+		file := resp.File
+		readall, err := io.ReadAll(file)
+		if err != nil {
+			logger.Warnf("readall failed")
+		}
+		logger.Warnf("readall len: %d", len(readall))
 
 		f := fmt.Sprintf("%s.png", imageKey)
 		logger.Warnf("filename: %s", f)
 		resp.WriteFile(f)
+		err = openai.VerifyPngs([]string{f})
+		if err != nil {
+			logger.Warnf("WriteFile verify failed: %s", err)
+		}
 		// defer os.Remove(f)
 
 		openai.ConvertJpegToPNG(f)
+		err = openai.VerifyPngs([]string{f})
+		if err != nil {
+			logger.Warnf("ConvertJpegToPNG verify failed: %s", err)
+		}
 		openai.ConvertToRGBA(f, f)
+		err = openai.VerifyPngs([]string{f})
+		if err != nil {
+			logger.Warnf("ConvertToRGBA verify failed: %s", err)
+		}
 
 		//图片校验
 		err = openai.VerifyPngs([]string{f})
