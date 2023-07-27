@@ -152,31 +152,31 @@ func pictureMultipartForm(request ImageVariantRequestBody,
 	return nil
 }
 
-func VerifyPngs(pngPaths []string) error {
+func IsPngs(pngPaths []string) (bool, error) {
 	for _, pngPath := range pngPaths {
 		f, err := os.Open(pngPath)
 		if err != nil {
-			return fmt.Errorf("os.Open: %v", err)
+			return true, fmt.Errorf("os.Open: %v", err)
 		}
 
 		fi, err := f.Stat()
 		if err != nil {
-			return fmt.Errorf("f.Stat: %v", err)
+			return true, fmt.Errorf("f.Stat: %v", err)
 		}
-		
+
 		logger.Warnf("verify size: %dB", fi.Size())
 		if fi.Size() > 4*1024*1024 {
-			return fmt.Errorf("image size too large, "+
+			return true, fmt.Errorf("image size too large, "+
 				"must be under %d MB", 4)
 		}
 
 		_, err = png.Decode(f)
 		if err != nil {
-			return fmt.Errorf("image must be valid png")
+			return false, nil
 		}
 	}
 
-	return nil
+	return true, nil
 }
 
 func ConvertToRGBA(inputFilePath string, outputFilePath string) error {

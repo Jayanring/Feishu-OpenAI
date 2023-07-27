@@ -63,7 +63,7 @@ func TestVariateOneImage(t *testing.T) {
 	//}
 	//fmt.Println("compressionType: ", compressionType)
 	ConvertToRGBA(image, image)
-	err := VerifyPngs([]string{image})
+	_, err := IsPngs([]string{image})
 	if err != nil {
 		t.Errorf("TestVariateOneImage failed with error: %v", err)
 		return
@@ -91,7 +91,7 @@ func TestVariateOneImageWithJpg(t *testing.T) {
 	fmt.Println("compressionType: ", compressionType)
 	//ConvertJPGtoPNG(image)
 	ConvertToRGBA(image, image)
-	err = VerifyPngs([]string{image})
+	_, err = IsPngs([]string{image})
 	if err != nil {
 		t.Errorf("TestVariateOneImage failed with error: %v", err)
 		return

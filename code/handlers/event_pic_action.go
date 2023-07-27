@@ -63,15 +63,18 @@ func (*PicAction) Execute(a *ActionInfo) bool {
 		resp.WriteFile(f_jpg)
 
 		// 检查是否已经是png
-		err = openai.VerifyPngs([]string{f_jpg})
-		if err != nil {
-			if err == fmt.Errorf("image must be valid png") {
-				openai.ConvertJpegToPNG(f_jpg)
-			} else {
-				logger.Warnf("VerifyPngs error: %s", err)
-				replyMsg(*a.ctx, fmt.Sprintf("🤖️：无法解析图片: %s", err), a.info.msgId)
+		is_png, err := openai.IsPngs([]string{f_jpg})
+		if !is_png {
+			err := openai.ConvertJpegToPNG(f_jpg)
+			if err != nil {
+				logger.Warnf("ConvertJpegToPNG error: %s", err)
+				replyMsg(*a.ctx, fmt.Sprintf("🤖️：无法转为png格式: %s", err), a.info.msgId)
 				return false
 			}
+		} else if err != nil {
+			logger.Warnf("VerifyPngs error: %s", err)
+			replyMsg(*a.ctx, fmt.Sprintf("🤖️：无法解析图片: %s", err), a.info.msgId)
+			return false
 		} else {
 			os.Rename(f_jpg, f_png)
 		}
@@ -79,8 +82,8 @@ func (*PicAction) Execute(a *ActionInfo) bool {
 		openai.ConvertToRGBA(f_png, f_png)
 
 		//图片校验
-		err = openai.VerifyPngs([]string{f_png})
-		if err != nil {
+		is_png, err = openai.IsPngs([]string{f_png})
+		if err != nil || !is_png {
 			logger.Warnf("VerifyPngs again error: %s", err)
 			replyMsg(*a.ctx, fmt.Sprintf("🤖️：无法解析图片: %s", err), a.info.msgId)
 			return false
