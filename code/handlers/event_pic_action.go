@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"image"
 	"image/png"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -81,12 +80,12 @@ func (*PicAction) Execute(a *ActionInfo) bool {
 				a.info.msgId)
 			return false
 		}
-		file := resp.File
-		readall, err := io.ReadAll(file)
-		if err != nil {
-			logger.Warnf("readall failed")
-		}
-		logger.Warnf("readall len: %d", len(readall))
+		// file := resp.File
+		// readall, err := io.ReadAll(file)
+		// if err != nil {
+		// 	logger.Warnf("readall failed")
+		// }
+		// logger.Warnf("readall len: %d", len(readall))
 
 		f := fmt.Sprintf("%s.png", imageKey)
 		logger.Warnf("filename: %s", f)
@@ -275,3 +274,16 @@ func readUrl() (string, error) {
 	}
 	return string(data), nil
 }
+
+// func WriteFile(fileName string) error {
+// 	bs, err := ioutil.ReadAll(resp.File)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	err = ioutil.WriteFile(fileName, bs, 0666)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return nil
+// }
