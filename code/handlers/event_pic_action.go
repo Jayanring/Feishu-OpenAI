@@ -111,8 +111,8 @@ func (*PicAction) Execute(a *ActionInfo) bool {
 		// send task
 		taskId, err := sendTask(url, f_png)
 		if err != nil {
-			replyMsg(*a.ctx, fmt.Sprintf("任务ID: %s\n发送出错", taskId), a.info.msgId)
-			logger.Warn(fmt.Sprintf("任务ID: %s\n发送出错", taskId))
+			replyMsg(*a.ctx, fmt.Sprintf("AI绘图任务发送出错: %s", err), a.info.msgId)
+			logger.Warn(fmt.Sprintf("AI绘图任务发送出错: %s", err))
 			return false
 		}
 		replyMsg(*a.ctx, fmt.Sprintf("AI绘图任务发送成功，任务ID: %s", taskId), a.info.msgId)
