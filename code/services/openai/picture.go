@@ -172,7 +172,7 @@ func VerifyPngs(pngPaths []string) error {
 
 		_, err = png.Decode(f)
 		if err != nil {
-			return fmt.Errorf("image must be valid png, got error: %v", err)
+			return fmt.Errorf("image must be valid png")
 		}
 	}
 

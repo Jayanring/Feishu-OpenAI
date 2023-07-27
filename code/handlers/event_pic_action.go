@@ -65,7 +65,7 @@ func (*PicAction) Execute(a *ActionInfo) bool {
 		// 检查是否已经是png
 		err = openai.VerifyPngs([]string{f_jpg})
 		if err != nil {
-			if err == fmt.Errorf("image must be valid png, got error: %v", err) {
+			if err == fmt.Errorf("image must be valid png") {
 				openai.ConvertJpegToPNG(f_jpg)
 			} else {
 				logger.Warnf("VerifyPngs error: %s", err)
@@ -140,7 +140,6 @@ func (*PicAction) Execute(a *ActionInfo) bool {
 				return false
 			}
 		}
-
 	}
 
 	return true
