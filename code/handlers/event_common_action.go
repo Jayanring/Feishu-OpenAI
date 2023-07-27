@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"start-feishubot/initialization"
+	"start-feishubot/logger"
 	"start-feishubot/services/openai"
 	"start-feishubot/utils"
 
@@ -65,6 +66,7 @@ type EmptyAction struct { /*空消息*/
 }
 
 func (*EmptyAction) Execute(a *ActionInfo) bool {
+	logger.Warn("EmptyAction Execute")
 	if len(a.info.qParsed) == 0 {
 		sendMsg(*a.ctx, "🤖️：你想知道什么呢~", a.info.chatId)
 		fmt.Println("msgId", *a.info.msgId,
